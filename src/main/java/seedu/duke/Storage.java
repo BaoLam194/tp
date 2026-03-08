@@ -13,6 +13,9 @@ import java.time.LocalDate;
  */
 public class Storage {
     private static final String FILE_PATH = "./data/applications.txt";
+    private static final String FILE_DELIMITER = "|";
+    private static final String FILE_DELIMITER_REGEX = "\\|";
+    private static final String NULL_STRING = "null";
 
     /**
      * Loads applications from the local file into the provided list.
@@ -22,33 +25,27 @@ public class Storage {
     public static void loadApplications(ArrayList<Application> userApplications) {
         try {
             File f = new File(FILE_PATH);
-            //Creates directory if it does not exist
+            // Creates directory if it does not exist
             if (f.getParentFile() != null && !f.getParentFile().exists()) {
                 f.getParentFile().mkdirs();
             }
-            //Create file if it does not exist
+            // Creates file if it does not exist
             if (!f.exists()) {
-                f.createNewFile(); // This physically creates the empty duke.txt file
+                f.createNewFile();
             }
             Scanner s = new Scanner(f);
-            //read lines from text file
-            //while loop means as long as there is more data to be read
-            //ie as long as there are more lines in the text file,
-            //keep reading and converting to Task objects
             while (s.hasNext()) {
-                //Reads one full line from the text file
                 String line = s.nextLine();
-                //Convert text back to object
                 Application t = parseFileString(line);
                 if (t != null) {
                     userApplications.add(t);
                 }
             }
-            //includes errors for CreateNewFile and scanner which both involve IOException
         } catch (IOException e) {
             System.out.println("File not found: " + e.getMessage());
         }
     }
+
     /**
      * Parses a single line from the data file into an Application object.
      *
@@ -56,18 +53,18 @@ public class Storage {
      * @return The reconstructed Application object.
      */
     private static Application parseFileString(String line) {
-        String[] parts = line.split("\\|");
+        String[] parts = line.split(FILE_DELIMITER_REGEX);
         String company = parts[0];
         String role = parts[1];
         LocalDate deadline = null;
-        if (!parts[2].equals("null") && !parts[2].isEmpty()) {
+        if (!parts[2].equals(NULL_STRING) && !parts[2].isEmpty()) {
             deadline = LocalDate.parse(parts[2]);
         }
         String contact = parts[3];
         String status = parts[4];
         Application app = new Application(company, role, deadline, contact);
         // Preserve the stored status instead of always defaulting to "Pending"
-        app.status = status;
+        app.setStatus(status);
         return app;
     }
 
@@ -101,9 +98,8 @@ public class Storage {
      * @return The formatted string.
      */
     private static String applicationToFileFormat(Application application) {
-        return application.company + "|" + application.role + "|"
-                + application.deadline + "|" + application.contact
-                + "|" + application.status;
+        return application.getCompany() + FILE_DELIMITER + application.getRole() + FILE_DELIMITER
+                + application.getDeadline() + FILE_DELIMITER + application.getContact()
+                + FILE_DELIMITER + application.getStatus();
     }
-
 }

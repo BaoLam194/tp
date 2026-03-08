@@ -1,10 +1,21 @@
 package seedu.duke;
 import java.time.LocalDate;
 
+/**
+ * Parses user input strings into Application objects.
+ */
 public class Parser {
 
     public static final String REGEX = "(?=c/|r/|ct/|d/)";
+    private static final String DATE_FORMAT_ERROR = "Date must be in YYYY-MM-DD format.";
 
+    /**
+     * Creates an Application from a raw user input string.
+     *
+     * @param input The full command string entered by the user.
+     * @return The constructed Application object.
+     * @throws InternTrackException If required fields are missing or the date format is invalid.
+     */
     public static Application createApplication(String input) throws InternTrackException {
         String[] parts = input.split(REGEX);
         String company = null, role = null, contact = null;
@@ -21,7 +32,7 @@ public class Parser {
                 try {
                     deadline = LocalDate.parse(trimmed.substring(2).trim());
                 } catch (Exception e) {
-                    throw new InternTrackException("Date must be in YYYY-MM-DD format.");
+                    throw new InternTrackException(DATE_FORMAT_ERROR);
                 }
             }
         }
