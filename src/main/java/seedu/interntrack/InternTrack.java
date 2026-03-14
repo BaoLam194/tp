@@ -42,11 +42,13 @@ public class InternTrack {
         try {
             if (line.startsWith(ADD_COMMAND)) {
                 logger.log(Level.INFO, "Processing ADD command");
-                assert line.contains(ADD_COMMAND) : "Logic error: handleCommand reached 'add' block without 'add' in string";
+                assert line.contains(ADD_COMMAND)
+                        : "Logic error: handleCommand reached 'add' block without 'add' in string";
                 int sizeBefore = userApplications.size();
                 Application newApplication = ApplicationList.addApplications(userApplications, line);
                 assert userApplications.size() == sizeBefore + 1 : "List size should increment after a successful add";
-                logger.log(Level.INFO, "Successfully added application: " + newApplication.getCompany() + " - " + newApplication.getRole());
+                logger.log(Level.INFO, "Successfully added application: "
+                        + newApplication.getCompany() + " - " + newApplication.getRole());
                 Ui.printAddApplication(newApplication, userApplications);
                 Storage.saveApplications(userApplications);
             } else if (line.startsWith(EDIT_COMMAND)) {
