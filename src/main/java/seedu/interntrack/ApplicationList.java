@@ -18,6 +18,10 @@ public class ApplicationList {
     public static Application addApplications(ArrayList<Application> userApplications,
             String line) throws InternTrackException {
         Application newApplication = Parser.createApplication(line);
+        assert newApplication.getCompany() != null && !newApplication.getCompany().isEmpty() :
+            "Application company should be valid after creation";
+        assert newApplication.getRole() != null && !newApplication.getRole().isEmpty() :
+            "Application role should be valid after creation";
         userApplications.add(newApplication);
         return newApplication;
     }

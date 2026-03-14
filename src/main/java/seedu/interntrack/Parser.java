@@ -43,6 +43,9 @@ public class Parser {
         if (company == null || role == null) {
             throw new InternTrackException("Both company (c/) and role (r/) are required!");
         }
+        // Assertions to verify internal invariants after parsing
+        assert company != null && !company.isEmpty() : "Company name should have been captured";
+        assert role != null && !role.isEmpty() : "Role title should have been captured";
         return new Application(company, role, deadline, contact);
     }
 

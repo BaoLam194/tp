@@ -6,7 +6,6 @@ import java.util.ArrayList;
  * Serves as the main entry point and command handler for InternTrack.
  */
 public class InternTrack {
-
     private static final String ADD_COMMAND = "add";
     private static final String BYE_COMMAND = "bye";
     private static final String EDIT_COMMAND = "edit";
@@ -17,6 +16,7 @@ public class InternTrack {
      */
     public static void main(String[] args) {
         ArrayList<Application> userApplications = new ArrayList<>();
+        assert userApplications != null : "userApplications list should not be null during command handling";
         Storage.loadApplications(userApplications);
         Ui.printWelcome();
         String line = Ui.readCommand();
@@ -38,7 +38,10 @@ public class InternTrack {
     private static void handleCommand(String line, ArrayList<Application> userApplications) {
         try {
             if (line.startsWith(ADD_COMMAND)) {
+                assert line.contains(ADD_COMMAND) : "Logic error: handleCommand reached 'add' block without 'add' in string";
+                int sizeBefore = userApplications.size();
                 Application newApplication = ApplicationList.addApplications(userApplications, line);
+                assert userApplications.size() == sizeBefore + 1 : "List size should increment after a successful add";
                 Ui.printAddApplication(newApplication, userApplications);
                 Storage.saveApplications(userApplications);
             } else if (line.startsWith(EDIT_COMMAND)) {
