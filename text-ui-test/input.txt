@@ -6,6 +6,8 @@ add c/NUS r/TA ct/ d/
 add r/Embedded c/Micron d/2027-01-01
 add c/NUS r/TA d/
 list
+delete 4
+delete -1
 edit 2 s/Applied
 edit 1 s/Accepted
 edit 2xc s/Accepted
@@ -14,3 +16,5 @@ edit 5 s/Rejected
 list
 filter s/Pending
 filter s/Ghosted
+delete 1
+add c/ShopBack r/SE d/2025-11-11 ct/Harim
