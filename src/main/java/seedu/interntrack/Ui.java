@@ -90,11 +90,13 @@ public class Ui {
     }
 
     public static void printAllApplications(ArrayList<Application> userApplications) {
+        assert userApplications != null : "Application list should not be null";
         if (userApplications.isEmpty()) {
             System.out.println("You have not applied for any roles yet, start applying now!");
             return;
         }
         int applicationCount = userApplications.size();
+        assert applicationCount > 0 : "Application count should be positive when not empty";
         System.out.println("You have applied for " + applicationCount + ((applicationCount > 1) ? " roles" : " role"));
         for (int i = 0; i < applicationCount; i++) {
             Application app = userApplications.get(i);

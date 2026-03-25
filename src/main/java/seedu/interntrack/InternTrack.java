@@ -65,7 +65,7 @@ public class InternTrack {
             } else if (line.startsWith(FILTER_COMMAND)) {
                 handleFilterCommand(line, userApplications);
             } else if (line.startsWith(LIST_COMMAND)) {
-                handleListCommand(line, userApplications);
+                handleListCommand( userApplications);
             } else {
                 logger.log(Level.WARNING, "Unknown command received: " + line);
                 Ui.printUnknownCommand();
@@ -104,9 +104,10 @@ public class InternTrack {
     /**
      * Handles the list command by listing all applications.
      */
-    private static void handleListCommand(String line, ArrayList<Application> userApplications)
+    private static void handleListCommand( ArrayList<Application> userApplications)
             throws InternTrackException {
         Ui.printAllApplications(userApplications);
+        logger.info("Showing all current applications");
     }
 
     /**
