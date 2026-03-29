@@ -156,7 +156,7 @@ public class InternTrack {
     }
 
     /**
-     * Handles the edit command by updating an application's status.
+     * Handles the edit command by updating an application's details.
      */
     private static void handleEditCommand(String line, ArrayList<Application> userApplications,
                                           Stack<ArrayList<Application>> undoHistory)
@@ -179,7 +179,7 @@ public class InternTrack {
     }
 
     /**
-     * Handles the filter command by listing applications that match the status.
+     * Handles the filter command by listing applications that match the details.
      */
     private static void handleFilterCommand(String line, ArrayList<Application> userApplications)
             throws InternTrackException {

@@ -167,12 +167,7 @@ public class Parser {
             }
         }
 
-        EditDetails editDetails = new EditDetails(company, role, deadline, contact, status);
-        if (!editDetails.hasUpdates()) {
-            throw new InternTrackException("Provide at least one field to edit.");
-        }
-
-        return editDetails;
+        return new EditDetails(company, role, deadline, contact, status);
     }
 
     /**
