@@ -344,7 +344,7 @@ By the time the user sees the welcome prompt, all previously saved applications 
 
 ### Add feature
 
-#### Proposed Implementation
+#### Implementation
 
 The add command follows a 5-step pipeline:
 
@@ -469,7 +469,77 @@ This approach keeps validation within the model while command interpretation rem
 
 ### Remind feature
 
-{Description of Remind feature implementation will be added here.}
+####  Implementation
+
+The `remind` command helps users stay on top of upcoming application deadlines by displaying all applications with deadlines within N days from today (default: 7 days).
+
+The remind feature is facilitated by the following key components:
+
+- **Parser** (`Parser#parseRemindDays()`) — Parses and validates the number of days from user input
+- **ApplicationList** (`ApplicationList#filterApplicationsOnOrBefore()`) — Filters applications by deadline
+- **Ui** (`Ui#printUpcomingDeadlines()`) — Displays the filtered applications
+- **InternTrack** (`InternTrack#handleRemindCommand()`) — Orchestrates the remind command workflow
+
+#### How the Remind Feature Works
+
+Given below is an example usage scenario and how the remind feature behaves:
+
+**Step 1:** User has 3 applications: Google (deadline Apr 3), Microsoft (deadline Apr 5), Amazon (deadline Apr 15). Today is Apr 1.
+
+**Step 2:** User executes `remind 5` to see applications due within the next 5 days.
+
+**Step 3:** `InternTrack#handleRemindCommand()` is invoked:
+1. Calls `Parser#parseRemindDays("remind 5")` which returns `5`
+2. Calculates cutoff date: `LocalDate.now().plusDays(5)` = Apr 6
+3. Calls `ApplicationList#filterApplicationsOnOrBefore(userApplications, Apr 6)` to filter the list
+4. For each application, checks: `if (deadline != null && !deadline.isAfter(Apr 6))` to include it
+5. Returns filtered list: Google (Apr 3) and Microsoft (Apr 5); excludes Amazon (Apr 15)
+
+**Step 4:** `Ui#printUpcomingDeadlines()` displays the result:
+```
+You have 2 applications due in the next 5 days (up to 2026-04-06):
+1. Software Engineer at Google is Pending. Apply by 2026-04-03.
+2. Data Analyst at Microsoft is Pending. Apply by 2026-04-05.
+```
+
+#### Error Handling
+
+The `Parser#parseRemindDays()` method validates input and handles error cases:
+
+| Error Case | Behavior |
+|---|---|
+| Days parameter ≤ 0 | `InternTrackException` thrown with message: "Number of days must be greater than 0." |
+| Non-integer parameter | `InternTrackException` thrown with message: "Days must be a valid number. Use format: remind [DAYS]" |
+| No parameter provided | Defaults to 7 days without exception |
+| No applications match deadline criteria | `Ui#printUpcomingDeadlines()` displays: "No applications due in the next N days." |
+
+#### Design Considerations
+
+**Aspect: Default Behavior**
+
+*Alternative 1 (current choice): Default to 7 days if no parameter provided*
+- Pros: Convenient for the most common use case (weekly planning); reduces typing
+- Cons: Users may not expect the default
+
+*Alternative 2: Require explicit days parameter*
+- Pros: Forces explicit intent; clearer semantics
+- Cons: Less convenient; more typing required
+
+**Rationale**: Weekly planning is the most natural checking interval for internship deadlines. The default of 7 days balances convenience with clarity.
+
+---
+
+**Aspect: Deadline Cutoff Inclusivity**
+
+*Alternative 1 (current choice): Include deadlines "on or before" the cutoff date (inclusive)*
+- Pros: Aligns with user expectation ("what do I need to do by then?"); safer approach
+- Cons: May include applications that are already overdue
+
+*Alternative 2: Exclude applications on the cutoff date (exclusive)*
+- Pros: Avoids including the boundary date itself
+- Cons: Users could miss deadline applications on the cutoff date if they misinterpret
+
+**Rationale**: It is safer to over-remind than under-remind. Missing a deadline is worse than showing one extra application.
 
 ---
 
