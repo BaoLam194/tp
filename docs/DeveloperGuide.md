@@ -850,7 +850,34 @@ interface.
 
 ### Use cases
 
-{Use cases will be added here.}
+#### Use Case 1: Add and manage internship applications
+
+**Actor:** User  
+**Precondition:** Application is running  
+**Postcondition:** Application data is saved to storage  
+
+**Main Success Scenario (MSS):**
+1. User adds a new internship application with company and role.
+2. System validates the input.
+3. System stores the application in the application list.
+4. System saves the updated list to storage.
+5. User lists applications to view all saved applications.
+6. User edits an application to update details such as deadline, contact, or status.
+7. System saves the updated list.
+8. User deletes an application that is no longer relevant.
+9. System saves the updated list.
+
+#### Use Case 2: Filter and sort applications
+
+**Actor:** User  
+
+**Main Success Scenario (MSS):**
+1. User requests to filter applications by a criterion (company, role, deadline, contact, or status).
+2. System filters the application list.
+3. System displays the filtered applications.
+4. User requests to sort applications by a specific criterion.
+5. System sorts the applications.
+6. System displays the sorted list.
 
 ---
 
