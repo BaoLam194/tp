@@ -89,16 +89,6 @@ The ***Architecture Diagram*** given above explains the high-level design of the
   The sequence of interaction follows a clear flow: User input → UI → Logic (Parser) → Model manipulation → Storage
   persistence.
 
-## Application List component
-
-![application\_list.png](diagrams/application_list_diag.png)
-
-The ApplicationList component is a stateless utility class that functions as a logic middleware. 
-
-It does not maintain its own state or store the application data internally; instead, it provides a suite of pure functions that perform operations (adding, filtering, sorting, editing) on an ArrayList<Application> passed in by the caller. 
-
-This decoupling ensures that the data storage remains independent of the processing logic.
-
 ---
 
 ### Ui component
@@ -327,7 +317,13 @@ The `Parser` component is responsible for interpreting user input and converting
 
 ### Application List component
 
-{Description of Application List component will be added here.}
+![application\_list.png](diagrams/application_list_diag.png)
+
+The ApplicationList component is a stateless utility class that functions as a logic middleware. 
+
+It does not maintain its own state or store the application data internally; instead, it provides a suite of pure functions that perform operations (adding, filtering, sorting, editing) on an ArrayList<Application> passed in by the caller. 
+
+This decoupling ensures that the data storage remains independent of the processing logic.
 
 ---
 
