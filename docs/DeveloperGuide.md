@@ -311,7 +311,55 @@ The `Parser` component is responsible for interpreting user input and converting
 
 ### Application component
 
-{Description of Application component will be added here.}
+The `Application` class represents a single internship application in the system.
+
+Each application stores the following attributes:
+
+- Company
+- Role
+- Deadline (optional)
+- Contact (optional)
+- Status
+
+---
+
+#### Key Design Features
+
+- The status is automatically initialized to `"Pending"` when a new application is created.
+- A copy constructor is implemented to support deep copying, which is essential for the undo feature.
+- Setter methods include validation to ensure data integrity.
+
+---
+
+#### Design Considerations
+
+##### Aspect: Default status initialization
+
+**Alternative 1 (Current Choice): Assign default status `"Pending"` in constructor**
+
+*Pros:*
+- Ensures all applications have a valid initial state
+- Prevents null or undefined status values
+- Simplifies logic across the application
+
+*Cons:*
+- Less flexibility if different defaults are needed in the future
+
+---
+
+**Alternative 2: Require user to specify status explicitly**
+
+*Pros:*
+- More flexible
+- Allows different workflows
+
+*Cons:*
+- Increases user effort
+- Higher risk of invalid or missing status
+
+**Rationale for Current Choice:**
+
+A default status simplifies the user experience and ensures consistency across all applications.
 
 ---
 
@@ -716,57 +764,47 @@ This approach keeps validation within the model while command interpretation rem
 The `undo` command allows users to revert the most recent modification made to the application list.
 
 Supported commands:
+- add
+- edit
+- delete
 
-* add
-* edit
-* delete
+---
+
+#### Implementation
 
 Undo is implemented using a snapshot-based state restoration mechanism.
 
----
-
-#### Snapshot Mechanism
-
 Before executing any modifying command:
 
-1. A deep copy of the current `userApplications` list is created.
-2. The snapshot is pushed onto an undo history stack.
+1. A deep copy of the current `userApplications` list is created
+2. The snapshot is pushed onto an undo history stack
 
-When the user executes `undo`:
+When `undo` is executed:
 
-1. The most recent snapshot is popped from the stack.
-2. The application list is replaced with the snapshot.
-3. The restored state is written to storage.
-
-This guarantees the system returns to the exact state before the most recent change.
+1. The most recent snapshot is popped from the stack
+2. The current list is cleared and replaced with the snapshot
+3. The restored state is saved to storage
 
 ---
 
-#### Example Workflow
+#### Deep Copy Mechanism
 
-add c/Google r/SWE Intern
-delete 1
-undo
+A deep copy is used to prevent reference sharing between states.
 
-Execution flow:
-
-1. `add` stores a snapshot of the empty list then adds the application.
-2. `delete` stores a snapshot then removes the application.
-3. `undo` restores the previous snapshot.
-
-The deleted application reappears in the list.
+Each `Application` object is copied individually, ensuring that previous states remain unaffected by future changes.
 
 ---
 
-##### Sequence Diagram: Undo Command
+#### Error Handling
 
-![undo\_sequence\_diag.png](diagrams/undo_sequence_diag.png)
+- If no previous state exists, an error message is shown:
+  "No command to undo."
 
 ---
 
 #### Design Considerations
 
-##### Aspect 4: Undo Implementation
+##### Aspect: Undo implementation strategy
 
 **Alternative 1 (Current Choice): Snapshot-based restoration**
 
@@ -776,7 +814,9 @@ The deleted application reappears in the list.
 - Guarantees correct state restoration
 
 *Cons:*
-- Increased memory usage
+- Higher memory usage
+
+---
 
 **Alternative 2: Command-based reversal**
 
@@ -784,10 +824,19 @@ The deleted application reappears in the list.
 - More memory efficient
 
 *Cons:*
-- Significantly more complex
+- Complex implementation
 - Each command requires custom undo logic
 
-**Rationale for Current Choice:** The snapshot approach was chosen for simplicity and reliability. In a student project managing a relatively small number of internship applications, the minimal memory overhead of storing snapshots is acceptable, and the guarantee of correct state restoration outweighs the efficiency benefits of command-based reversal. This design ensures that any future modifications to commands don't inadvertently break undo functionality.
+---
+
+**Rationale for Current Choice:**
+
+The snapshot approach ensures correctness and simplicity, which is more suitable for a small-scale application.
+
+---
+##### Sequence Diagram: Undo Command
+
+![undo\_sequence\_diag.png](diagrams/undo_sequence_diag.png)
 
 ---
 
