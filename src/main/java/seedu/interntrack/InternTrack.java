@@ -108,16 +108,8 @@ public class InternTrack {
                                          Stack<ArrayList<Application>> undoHistory)
             throws InternTrackException {
         logger.log(Level.INFO, "Processing ADD command");
-
-        Application newApplication = Parser.createApplication(line);
         saveStateForUndo(userApplications, undoHistory);
-
-        int sizeBefore = userApplications.size();
-        userApplications.add(newApplication);
-
-        assert userApplications.size() == sizeBefore + 1
-                : "List size should increment after a successful add";
-
+        Application newApplication = ApplicationList.addApplication(userApplications, line);
         logger.log(Level.INFO, "Successfully added application: "
                 + newApplication.getCompany() + " - " + newApplication.getRole());
         Ui.printAddApplication(newApplication, userApplications);
@@ -258,9 +250,10 @@ public class InternTrack {
     private static void handleRemindCommand(String line, ArrayList<Application> userApplications)
             throws InternTrackException {
         int numDays = Parser.parseRemindDays(line);
-        LocalDate remindDate = LocalDate.now().plusDays(numDays);
         ArrayList<Application> filteredApplications =
-                ApplicationList.filterApplicationsOnOrBefore(userApplications, remindDate);
+                ApplicationList.filterApplicationsByDaysAhead(userApplications, numDays);
+        LocalDate remindDate = LocalDate.now().plusDays(numDays);
+        assert remindDate.isAfter(LocalDate.now()) : "Remind date should be in the future";
         Ui.printUpcomingDeadlines(filteredApplications, numDays, remindDate);
     }
 
