@@ -401,7 +401,7 @@ public class ApplicationListTest {
 
         // Today and tomorrow should be included, but day after tomorrow excluded
         assertEquals(2, filtered.size());
-        assertEquals(LocalDate.parse("2026-04-09"), filtered.get(0).getDeadline());
+        assertEquals(today, filtered.get(0).getDeadline());
         assertEquals(tomorrow, filtered.get(1).getDeadline());
     }
 

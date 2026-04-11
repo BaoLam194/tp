@@ -83,11 +83,11 @@ The ***Architecture Diagram*** given above explains the high-level design of the
 * InternTrack: Acts as the central coordinator of the application, handles the main application loop and command dispatching.
   Delegates tasks to other components such as Parser, ApplicationList, UI, and Storage.
 * UI (Ui): Responsible for all user interactions via the command line, reads user input and displays output messages, does not contain business logic.
-* Parser: Responsible for interpreting raw user input. Extracts command types and parameters (e.g., index, filters, fields) and return to InternTracker
+* Parser: Responsible for interpreting raw user input. Extracts command types and parameters (e.g., index, filters, fields) and return to InternTrack
 * Model (ApplicationList): ApplicationList contains and operates the core business logic
 * Storage (Storage): Manages persistence of application data to disk
 * Common : A suite of utility classes (i.e. Application,EditDetails, FilterCriteria) shared across all components. They are responsible for supporting communication between components
-  The sequence of interaction follows a clear flow: User input → UI → InternTracker → Parser/ApplicationList/Storage → UI
+  The sequence of interaction follows a clear flow: User input → UI → InternTrack → Parser/ApplicationList/Storage → UI
   persistence.
 
 The architecture could be divided into few layers as the graph above, which is the User-interaction, orchestrator, logic processing and disk storage.
@@ -190,14 +190,14 @@ The `Storage` component handles persistence of application data through the foll
 
 The data file (`./data/applications.txt`) stores applications in a pipe-delimited format. Each line represents one application with exactly 6 fields:
 
-| Field      | Index | Format              | Example                | Notes                                 |
-|------------|-------|---------------------|------------------------|---------------------------------------|
-| Company    | 0     | Plain text          | `Google`               | Mandatory, non-empty                  |
-| Role       | 1     | Plain text          | `SWE Intern`           | Mandatory, non-empty                  |
-| Deadline   | 2     | ISO-8601 date       | `2025-08-01`           | Optional; `null` if not set           |
-| Contact    | 3     | Plain text (email)  | `john.doe@google.com`  | Optional; `null` if not set           |
-| Status     | 4     | Predefined enum     | `Applied`              | Mandatory; default is `Pending`       |
-| Archived   | 5     | Boolean             | `false`                | Indicates if application is archived  |
+| Field      | Index | Format          | Example                         | Notes                                 |
+|------------|-------|-----------------|---------------------------------|---------------------------------------|
+| Company    | 0     | Plain text      | `Google`                        | Mandatory, non-empty                  |
+| Role       | 1     | Plain text      | `SWE Intern`                    | Mandatory, non-empty                  |
+| Deadline   | 2     | ISO-8601 date   | `2025-08-01`                    | Optional; `null` if not set           |
+| Contact    | 3     | Plain text      | `john.doe@google.com` or `John` | Optional; `null` if not set           |
+| Status     | 4     | Predefined enum | `Applied`                       | Mandatory; default is `Pending`       |
+| Archived   | 5     | Boolean         | `false`                         | Indicates if application is archived  |
 
 **Example line:**
 ```
@@ -1300,7 +1300,7 @@ interface.
    - `add c/Google r/SWE Intern`
    - `add c/Microsoft r/Azure Developer`
 2. Verify both appear in the list
-3. **Close the application** (via `exit` command)
+3. **Close the application** (via `bye` command)
 4. **Reopen the application**
 5. **Expected**: Both applications reappear in the list; data persisted correctly
 
