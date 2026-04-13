@@ -189,7 +189,7 @@ public class InternTrack {
 
         Application updatedApplication = ApplicationList.editApplication(userApplications, index, editDetails);
 
-        Ui.printEditApplication(updatedApplication, index);
+        Ui.printEditApplication(updatedApplication, index, editDetails);
         Storage.saveApplications(userApplications);
 
         logger.info("Successfully updated application at index " + index);
