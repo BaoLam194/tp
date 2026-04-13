@@ -457,12 +457,12 @@ public class Parser {
             int day = Integer.parseInt(parts[2]);
 
             if (month < 1 || month > 12) {
-                return "Invalid month: " + month + ". Month must be between 1 and 12.";
+                return DATE_FORMAT_ERROR + "Invalid month: " + month + ". Month must be between 1 and 12.";
             }
 
             int maxDays = YearMonth.of(year, month).lengthOfMonth();
             if (day > maxDays) {
-                return "Invalid date: " + trimmedValue + " does not exist (this month has " + maxDays + " days).";
+                return DATE_FORMAT_ERROR + "Invalid date: " + trimmedValue + " does not exist (this month has " + maxDays + " days).";
             }
         } catch (NumberFormatException ignored) {
             // If parsing the components fails, fall back to generic error message
