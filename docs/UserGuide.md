@@ -1,5 +1,26 @@
 # User Guide
 
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Quick Start](#quick-start)
+3. [Features](#features)
+4. [Commands](#commands)
+   - [1. Add a new internship application: `add`](#1-add-a-new-internship-application-add)
+   - [2. List all applications: `list`](#2-list-all-applications-list)
+   - [3. Edit an application: `edit`](#3-edit-an-application-edit)
+   - [4. Delete an application: `delete`](#4-delete-an-application-delete)
+   - [5. Filter applications: `filter`](#5-filter-applications-filter)
+   - [6. View applications with upcoming deadlines: `remind`](#6-view-applications-with-upcoming-deadlines-remind)
+   - [7. Sort applications: `sort`](#7-sort-applications-sort)
+   - [8. Undo the most recent change: `undo`](#8-undo-the-most-recent-change-undo)
+   - [9. Get summary: `summary`](#9-get-summary-summary)
+   - [10. Exit the application: `bye`](#10-exit-the-application-bye)
+5. [FAQ](#faq)
+6. [Command Summary](#command-summary)
+
+---
+
 ## Introduction
 
 InternTrack is a command-line application that helps users track their internship applications efficiently. It allows users to record application details, update statuses, and organize applications using filtering and sorting commands.
@@ -15,11 +36,9 @@ InternTrack is designed for students who prefer fast keyboard-based workflows.
    https://github.com/AY2526S2-CS2113-W10-1/tp/releases/tag/v1.0
 3. Open a terminal in the folder containing the jar file.
 4. Run the application using:
-
 ```
 java -jar InternTrack.jar
 ```
-
 5. Type commands into the terminal and press Enter to execute them.
 
 ---
@@ -232,7 +251,9 @@ You have 2 applications matching status Pending.
 
 ## 6. View applications with upcoming deadlines: `remind`
 
-Shows applications with deadlines within the next N days.
+Shows applications with deadlines within the next N days. 
+
+It will throw error if the day specified is invalid(negative, not integer) or too big(more than 32 bits).
 
 Format
 
@@ -278,6 +299,8 @@ No applications due in the next 3 days.
 
 Sorts applications based on specified criteria.
 
+If the criteria for sorting is non-existent, it will be put at the end of the list unless `NONNULL` flag is used.
+
 Format
 
 ```
@@ -321,13 +344,15 @@ Sort applications by deadline in descending order.
 
 ## 8. Undo the most recent change: `undo`
 
-Reverts the most recent modifying command.
+Reverts the most recent modifying command. If previous there is no supported commands for undo, it will do nothing.
 
 Supported commands
 
 - `add`
 - `edit`
 - `delete`
+- `archive`
+- `unarchive`
 
 Format
 
@@ -382,8 +407,119 @@ Upcoming Deadlines (Next 7 days):
  - Amazon (Fullstack Developer) : Due in 4 days.
 ____________________________________________________________
 ```
+## 10. Archive an application: `archive`
 
-## 10. Exit the application: `bye`
+Marks an application as archived without deleting it from the tracker.
+
+Archived applications remain stored, but can be separated from active applications for better organisation.
+
+Format
+
+```
+archive INDEX
+```
+
+Parameters
+
+- `INDEX` : Index of the application in the list
+
+Example
+
+```
+archive 2
+```
+
+Result
+
+Archives application 2.
+
+**Example output:**
+
+```
+Nice! I've archived application 2:
+[Archived] Meta - Data Analyst (Deadline: 2026-05-25, Contact: Bob, Status: Pending)
+```
+
+### Notes
+
+- The application index must be greater than 0.
+- The application must exist in the list.
+- An already archived application cannot be archived again.
+
+---
+
+## 11. Restore an archived application: `unarchive`
+
+Restores an archived application back to its active state.
+
+ Format
+
+```
+unarchive INDEX
+```
+ 
+Parameters
+
+- `INDEX` : Index of the application in the list
+
+ Example
+
+```
+unarchive 2
+```
+
+ Result
+
+Restores application 2.
+
+**Example output:**
+
+```
+Nice! I've restored application 2:
+Meta - Data Analyst (Deadline: 2026-05-25, Contact: Bob, Status: Pending)
+```
+
+ Notes
+
+- The application index must be greater than 0.
+- The application must exist in the list.
+- The application must already be archived.
+
+---
+
+## 12. View archived applications: `listarchived`
+
+Displays all archived applications currently stored in the tracker.
+
+ Format
+
+```
+listarchived
+```
+
+ Example
+
+```
+listarchived
+```
+
+ Result
+
+Shows all archived applications.
+
+**Example output:**
+
+```
+You have 1 archived application
+1. [Archived] Data Analyst at Meta is Pending. Apply by 2026-05-25. Contact with Bob.
+```
+
+If there are no archived applications:
+
+```
+You have no archived applications.
+```
+## 13. Exit the application: `bye`
 
 Closes InternTrack.
 
@@ -430,4 +566,9 @@ Undo history is cleared when the application restarts.
 | Sort | `sort by/CRITERIA [DESC] [NONNULL]` |
 | Undo | `undo` |
 | Summary | `summary` |
+| Archive | `archive INDEX` |
+| Unarchive | `unarchive INDEX` |
+| List archived | `listarchived` |
 | Exit | `bye` |
+
+* Archived applications are marked with `[Archived]` when displayed.

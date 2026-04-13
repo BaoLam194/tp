@@ -24,7 +24,7 @@ public class Storage {
     private static final int DEADLINE_INDEX = 2;
     private static final int CONTACT_INDEX = 3;
     private static final int STATUS_INDEX = 4;
-
+    private static final int ARCHIVED_INDEX = 5;
     /**
      * Loads applications from the local file into the provided list.
      *
@@ -56,6 +56,7 @@ public class Storage {
             }
 
         } catch (IOException e) {
+            System.out.println("Warning: Unable to open save file, your changes may be lost. Please retry");
             logger.log(Level.SEVERE, "IO error while loading applications: " + e.getMessage());
         }
     }
@@ -71,7 +72,7 @@ public class Storage {
 
         String[] parts = line.split(FILE_DELIMITER_REGEX, -1);
 
-        if (parts.length != 5) {
+        if (parts.length < 5) {
             logger.log(Level.WARNING, "Skipping malformed application record: " + line);
             return null;
         }
@@ -87,9 +88,14 @@ public class Storage {
 
             String contact = (parts[CONTACT_INDEX].equals(NULL_STRING)) ? null : parts[CONTACT_INDEX];
             String status = parts[STATUS_INDEX];
+            boolean isArchived = false;
+            if (parts.length > 5) {
+                isArchived = Boolean.parseBoolean(parts[ARCHIVED_INDEX]);
+            }
 
             Application app = new Application(company, role, deadline, contact);
             app.setStatus(status);
+            app.setArchived(isArchived);
 
             assert app.getStatus() != null && !app.getStatus().isBlank()
                     : "Loaded application status should not be blank";
@@ -119,6 +125,7 @@ public class Storage {
             logger.log(Level.INFO, "Successfully saved " + userApplications.size() + " applications to file");
 
         } catch (IOException e) {
+            System.out.println("Warning: Failed to save data to disk. Your changes may be lost.");
             logger.log(Level.SEVERE, "IO error while saving applications: " + e.getMessage());
         }
     }
@@ -132,6 +139,6 @@ public class Storage {
     private static String applicationToFileFormat(Application application) {
         return application.getCompany() + FILE_DELIMITER + application.getRole() + FILE_DELIMITER
                 + application.getDeadline() + FILE_DELIMITER + application.getContact()
-                + FILE_DELIMITER + application.getStatus();
+                + FILE_DELIMITER + application.getStatus() + FILE_DELIMITER + application.isArchived();
     }
 }

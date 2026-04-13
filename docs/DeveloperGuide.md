@@ -22,6 +22,8 @@
    - [Delete feature](#delete-feature)
    - [Sort feature](#sort-feature)
    - [Undo feature](#undo-feature)
+   - [Archive feature](#archive-feature)
+   - [Unarchive feature](#unarchive-feature)
    - [Summary feature](#summary-feature)
 5. [Appendix: Requirements](#appendix-requirements)
    - [Product scope](#product-scope)
@@ -81,11 +83,11 @@ The ***Architecture Diagram*** given above explains the high-level design of the
 * InternTrack: Acts as the central coordinator of the application, handles the main application loop and command dispatching.
   Delegates tasks to other components such as Parser, ApplicationList, UI, and Storage.
 * UI (Ui): Responsible for all user interactions via the command line, reads user input and displays output messages, does not contain business logic.
-* Parser: Responsible for interpreting raw user input. Extracts command types and parameters (e.g., index, filters, fields) and return to InternTracker
+* Parser: Responsible for interpreting raw user input. Extracts command types and parameters (e.g., index, filters, fields) and return to InternTrack
 * Model (ApplicationList): ApplicationList contains and operates the core business logic
 * Storage (Storage): Manages persistence of application data to disk
 * Common : A suite of utility classes (i.e. Application,EditDetails, FilterCriteria) shared across all components. They are responsible for supporting communication between components
-  The sequence of interaction follows a clear flow: User input → UI → InternTracker → Parser/ApplicationList/Storage → UI
+  The sequence of interaction follows a clear flow: User input → UI → InternTrack → Parser/ApplicationList/Storage → UI
   persistence.
 
 The architecture could be divided into few layers as the graph above, which is the User-interaction, orchestrator, logic processing and disk storage.
@@ -186,24 +188,25 @@ The `Storage` component handles persistence of application data through the foll
 
 #### File Format Specification
 
-The data file (`./data/applications.txt`) stores applications in a pipe-delimited format. Each line represents one application with exactly 5 fields:
+The data file (`./data/applications.txt`) stores applications in a pipe-delimited format. Each line represents one application with exactly 6 fields:
 
-| Field      | Index | Format              | Example                | Notes                        |
-|------------|-------|---------------------|------------------------|------------------------------|
-| Company    | 0     | Plain text          | `Google`               | Mandatory, non-empty         |
-| Role       | 1     | Plain text          | `SWE Intern`           | Mandatory, non-empty         |
-| Deadline   | 2     | ISO-8601 date       | `2025-08-01`           | Optional; `null` if not set  |
-| Contact    | 3     | Plain text (email)  | `john.doe@google.com`  | Optional; `null` if not set  |
-| Status     | 4     | Predefined enum     | `Applied`              | Mandatory; default is `Pending` |
+| Field      | Index | Format          | Example                         | Notes                                 |
+|------------|-------|-----------------|---------------------------------|---------------------------------------|
+| Company    | 0     | Plain text      | `Google`                        | Mandatory, non-empty                  |
+| Role       | 1     | Plain text      | `SWE Intern`                    | Mandatory, non-empty                  |
+| Deadline   | 2     | ISO-8601 date   | `2025-08-01`                    | Optional; `null` if not set           |
+| Contact    | 3     | Plain text      | `john.doe@google.com` or `John` | Optional; `null` if not set           |
+| Status     | 4     | Predefined enum | `Applied`                       | Mandatory; default is `Pending`       |
+| Archived   | 5     | Boolean         | `false`                         | Indicates if application is archived  |
 
 **Example line:**
 ```
-Google|SWE Intern|2025-08-01|john.doe@google.com|Applied
+Google|SWE Intern|2025-08-01|john.doe@google.com|Applied|false
 ```
 
 **Example with null fields:**
 ```
-Microsoft|Azure Developer|null|contact.unknown@microsoft.com|Pending
+Microsoft|Azure Developer|null|contact.unknown@microsoft.com|Pending|false
 ```
 
 ---
@@ -221,7 +224,7 @@ When `InternTrack.main()` runs, the very first step is to load existing applicat
 3. The method checks if the `./data/` directory and `./data/applications.txt` file exist; if not, they are created automatically
 4. Each non-empty line in the file is parsed via `parseFileString()`, which:
    - Splits the line using the pipe delimiter (`|`)
-   - Validates that exactly 5 fields are present and correctly formatted
+   - Validates that at least 5 fields are present and correctly formatted, with an optional 6th field for archived state   
    - Creates an `Application` object with the parsed values
 5. Valid applications are added to the in-memory list
 6. Malformed or unparseable lines are logged as warnings and skipped, ensuring the application never crashes due to corrupted data
@@ -242,7 +245,7 @@ Once the application is running and the user performs an action that modifies th
 4. `Storage.saveApplications()` is called immediately to persist the change
 5. Inside `saveApplications()`:
    - A `StringBuilder` accumulates the string representation of all applications
-   - Each application is converted to pipe-delimited format via `applicationToFileFormat()`, which concatenates the five fields (company, role, deadline, contact, status) separated by the `|` delimiter
+   - Each application is converted to pipe-delimited format via `applicationToFileFormat()`, which concatenates the six fields (company, role, deadline, contact, status, archived) separated by the `|` delimiter 
    - The entire accumulated string is written to `./data/applications.txt` in a single atomic file operation
    - On successful write, an informational log message is recorded
 
@@ -903,10 +906,14 @@ This approach keeps validation within the model while command interpretation rem
 
 The `undo` command allows users to revert the most recent modification made to the application list.
 
+If previous there is no supported commands for undo, it will do nothing.
+
 Supported commands:
 - add
 - edit
 - delete
+- archive
+- unarchive
 
 ---
 
@@ -979,6 +986,89 @@ The snapshot approach ensures correctness and simplicity, which is more suitable
 ![undo\_sequence\_diag.png](diagrams/undo_sequence_diag.png)
 
 ---
+### Archive feature
+
+The `archive` command allows users to mark an application as archived without removing it from the system.
+
+Archived applications are retained in storage but excluded from active views such as `list`, `filter`, and `sort`.
+
+#### Implementation
+
+1. `InternTrack.handleArchiveCommand()` parses the index using `Parser.parseArchiveIndex()`.
+2. The current state is saved using `saveStateForUndo()` to support undo.
+3. `ApplicationList.archiveApplication()` sets the `isArchived` flag to `true`.
+4. `Storage.saveApplications()` persists the updated state.
+5. `Ui.printArchiveApplication()` displays confirmation to the user.
+
+#### Design Considerations
+
+**Aspect: Soft delete vs hard delete**
+
+**Alternative 1 (Current Choice): Soft delete using archive flag**
+
+*Pros:*
+- Prevents accidental data loss
+- Allows restoration using `unarchive`
+- Works well with undo functionality
+
+*Cons:*
+- Requires additional filtering logic to exclude archived items
+
+**Alternative 2: Hard delete**
+
+*Pros:*
+- Simpler implementation
+- No need to manage archived state
+
+*Cons:*
+- Data loss is permanent
+- Cannot restore deleted applications
+
+**Rationale for Current Choice:**
+
+Using an archive flag provides a safer and more flexible approach by preserving data while still allowing users to organize their applications effectively.
+
+### Unarchive feature
+
+The `unarchive` command allows users to restore a previously archived application back to the active list.
+
+Unarchived applications will again appear in commands such as `list`, `filter`, and `sort`.
+
+#### Implementation
+
+1. `InternTrack.handleUnarchiveCommand()` parses the index using `Parser.parseArchiveIndex()`.
+2. The current state is saved using `saveStateForUndo()` to support undo.
+3. `ApplicationList.unarchiveApplication()` sets the `isArchived` flag to `false`.
+4. `Storage.saveApplications()` persists the updated state.
+5. `Ui.printUnarchiveApplication()` displays confirmation to the user.
+
+#### Design Considerations
+
+**Aspect: Restoring archived applications**
+
+**Alternative 1 (Current Choice): Toggle archive flag**
+
+*Pros:*
+- Simple and efficient implementation
+- Maintains consistency with archive feature
+- Fully compatible with undo mechanism
+
+*Cons:*
+- Requires additional checks to ensure only archived applications can be restored
+
+**Alternative 2: Recreate application object**
+
+*Pros:*
+- Clear separation between archived and active states
+
+*Cons:*
+- Unnecessary complexity
+- Risk of losing original metadata
+- Breaks consistency with archive design
+
+**Rationale for Current Choice:**
+
+Toggling the archive flag provides a straightforward and consistent way to restore applications without duplicating data or introducing additional complexity.
 
 ### Summary feature
 
@@ -1212,7 +1302,7 @@ interface.
    - `add c/Google r/SWE Intern`
    - `add c/Microsoft r/Azure Developer`
 2. Verify both appear in the list
-3. **Close the application** (via `exit` command)
+3. **Close the application** (via `bye` command)
 4. **Reopen the application**
 5. **Expected**: Both applications reappear in the list; data persisted correctly
 
